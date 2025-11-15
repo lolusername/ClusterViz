@@ -1,32 +1,30 @@
-# Super Agent Whiteboard – Solid + D3 Rewrite
+# ClusterViz
+An interactive space for teaching clustering: sketch on a whiteboard, manipulate a shared dataset, and launch explainers without leaving the canvas.
 
-This branch is the first pass of the SolidJS-based rewrite requested for the Super Agent ML whiteboard. The project removes the original Svelte/p5 stack and replaces it with a lean Solid + Canvas core, plus D3/TensorFlow-ready visualization infrastructure.
+## Overview
+ClusterViz mixes two ingredients that usually live in different tabs. The multi-layer board handles notes, diagrams, and quick annotations; the visualization rail mounts Solid-powered modules (k-means, DBSCAN today) that reuse the same dataset and controls. Everything is wired through Solid signals so swapping modules or resizing the canvas keeps the state intact.
 
-## Tech stack
+## Features
+- Layered sketching with pens, shapes, fill/outline colors, locking, and undo/redo (`src/components/ToolPanel.tsx`, `src/lib/whiteboard/engine.ts`).
+- Dataset console for density sliders, distribution presets, and manual point drops that sync across modules (`src/state/dataset.ts`, `SharedDatasetControls.tsx`).
+- Palette extraction from any uploaded image using RGB-space k-means, shared by all modules (`src/lib/ml/modules/paletteUtils.ts`).
+- Library of explainers you can search and launch inline; each registers through `src/lib/ml/registry.ts`.
+- K-Means module with draggable centroids, initialization walkthroughs, and palette-aware persistence (`kmeansSolid.tsx`).
+- DBSCAN module with ε / MinPts sliders, noise/core/border labels, and drag-to-rerun interactions (`dbscanSolid.tsx`).
 
-- **SolidJS + Vite** – component system and reactivity
-- **Custom canvas engine** – whiteboard strokes, shapes, erasing, annotations, layers
-- **D3 v7** – GPU-friendly rendering pipeline for interactive ML plots (k-means implemented)
-- **TensorFlow.js ready** – architecture prepared for future ML visualizations
+## Architecture snapshot
+- `src/App.tsx` arranges the workspace, while `WhiteboardCanvas.tsx` hosts both the drawing layers and visualization overlay.
+- `whiteboardState`, `datasetState`, and `visualizationState` (in `src/state/`) keep Solid stores for tools, shared data, and active modules.
+- The canvas engine caches one off-screen canvas per layer, draws previews on an overlay surface, and dispatches commits back to the store.
+- Visualization modules receive a `VisualizationContext` (canvas, overlay, controls host, width/height helpers) so they can manage lifecycles without touching global DOM.
 
-## Running locally
+## Stack & scripts
+- SolidJS + Vite + TypeScript, Tailwind/PostCSS for styling.
+- D3 for sampling utilities, TensorFlow.js already included for future modules.
 
 ```bash
 npm install
 npm run dev
+npm run build   # bundles to dist/
+npm run preview # serve the production build
 ```
-
-## Current status (rewrite in progress)
-
-- ✅ New Solid layout (tool panel, layers, visualization library, annotation prompts)
-- ✅ Canvas engine with multi-layer support, undo/redo, notes/text overlays, grid/axes
-- ✅ D3-powered clustering suite: K-Means (now with image palette extraction) and DBSCAN demos
-- 🚧 Visualization control panel – hooks exist, UI wiring pending
-
-## Next steps
-
-1. Deepen clustering controls (distance metrics, linkage strategies, seeding options).
-2. Wire visualization control widgets (sliders, toggles, buttons) via `visualizationActions` state.
-3. Expand export pipeline (PNG/SVG/JSON) and ensure parity with the former feature set.
-
-Because this is a full rewrite, expect APIs and component boundaries to continue evolving. The new structure is now primed for performance work without p5 overhead.

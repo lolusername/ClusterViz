@@ -12,10 +12,6 @@ const DEFAULT_MESSAGES: Record<string, string[]> = {
     "Adjust ε and MinPts to contrast dense clusters vs. noise.",
     "Explain core, border, and noise points by adding samples interactively.",
   ],
-  hierarchical: [
-    "Vary the cluster cut to show how merges build the dendrogram.",
-    "Compare single-link behaviour across point layouts.",
-  ],
 };
 
 const [messages, setMessages] = createSignal<string[]>([]);

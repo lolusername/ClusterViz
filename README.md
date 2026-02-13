@@ -1,30 +1,55 @@
 # ClusterViz
-An interactive space for teaching clustering: sketch on a whiteboard, manipulate a shared dataset, and launch explainers without leaving the canvas.
+ClusterViz is a clustering sandbox built around one core idea:
 
-## Overview
-ClusterViz mixes two ingredients that usually live in different tabs. The multi-layer board handles notes, diagrams, and quick annotations; the visualization rail mounts Solid-powered modules (k-means, DBSCAN today) that reuse the same dataset and controls. Everything is wired through Solid signals so swapping modules or resizing the canvas keeps the state intact.
+Run clustering workflows across two data spaces in the same app:
+- Randomly generated points on a 2D plane.
+- Image pixels treated as vectors in a pixel-value matrix (RGB space).
 
-## Features
-- Layered sketching with pens, shapes, fill/outline colors, locking, and undo/redo (`src/components/ToolPanel.tsx`, `src/lib/whiteboard/engine.ts`).
-- Dataset console for density sliders, distribution presets, and manual point drops that sync across modules (`src/state/dataset.ts`, `SharedDatasetControls.tsx`).
-- Palette extraction from any uploaded image using RGB-space k-means, shared by all modules (`src/lib/ml/modules/paletteUtils.ts`).
-- Library of explainers you can search and launch inline; each registers through `src/lib/ml/registry.ts`.
-- K-Means module with draggable centroids, initialization walkthroughs, and palette-aware persistence (`kmeansSolid.tsx`).
-- DBSCAN module with ε / MinPts sliders, noise/core/border labels, and drag-to-rerun interactions (`dbscanSolid.tsx`).
+This makes it easy to show that the same clustering intuition can transfer from geometric data to image data.
 
-## Architecture snapshot
-- `src/App.tsx` arranges the workspace, while `WhiteboardCanvas.tsx` hosts both the drawing layers and visualization overlay.
-- `whiteboardState`, `datasetState`, and `visualizationState` (in `src/state/`) keep Solid stores for tools, shared data, and active modules.
-- The canvas engine caches one off-screen canvas per layer, draws previews on an overlay surface, and dispatches commits back to the store.
-- Visualization modules receive a `VisualizationContext` (canvas, overlay, controls host, width/height helpers) so they can manage lifecycles without touching global DOM.
+## What It Does
+- Lets you generate and edit 2D point clouds (gaussian, uniform, rings, grid, and manual edits).
+- Lets you upload images, sample pixels, and cluster color vectors from the pixel matrix.
+- Keeps a shared dataset state so module changes stay in sync as you switch explainers.
+- Combines a whiteboard and clustering modules in one workspace for teaching and demos.
 
-## Stack & scripts
-- SolidJS + Vite + TypeScript, Tailwind/PostCSS for styling.
-- D3 for sampling utilities, TensorFlow.js already included for future modules.
+## Why This Is Useful
+Most clustering demos only show one type of data. ClusterViz is designed to compare:
+- Spatial clustering on a 2D plane.
+- Pixel/color clustering from real images.
 
+You can discuss the same concepts (distance, neighborhoods, cluster assignment, outliers, centroids) in both contexts without switching tools.
+
+## Current Modules
+- K-Means:
+  - Interactive clustering on 2D points with draggable centroids.
+  - Color clustering on image pixels in RGB space for palette extraction.
+- DBSCAN:
+  - Density-based clustering on the shared 2D dataset (epsilon and MinPts controls).
+  - Shares the same dataset/control surface and image upload context for side-by-side teaching.
+
+## Core Workflow
+1. Create or regenerate a point dataset on the 2D canvas.
+2. Optionally upload an image and sample its pixels.
+3. Run clustering in the selected module.
+4. Compare behavior between geometric data and pixel-value data.
+
+## Architecture
+- `src/App.tsx` builds the workspace layout (canvas, controls, library).
+- `src/components/WhiteboardCanvas.tsx` hosts drawing layers and visualization overlays.
+- `src/state/dataset.ts` stores shared dataset metadata (origin, points, image preview, palette swatches).
+- `src/lib/ml/modules/kmeansSolid.tsx` and `src/lib/ml/modules/dbscanSolid.tsx` implement interactive modules.
+- `src/lib/ml/modules/paletteUtils.ts` handles image sampling and RGB-space color clustering.
+
+## Tech Stack
+- SolidJS + Vite + TypeScript
+- Tailwind/PostCSS
+- D3 utilities for data helpers
+
+## Run Locally
 ```bash
 npm install
 npm run dev
-npm run build   # bundles to dist/
-npm run preview # serve the production build
+npm run build
+npm run preview
 ```
